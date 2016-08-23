@@ -1,7 +1,1 @@
-name: PaintballGun
-author: Mickyjou
-version: 1.0
-main: me.mickyjou.main.pbgun
-commands:
-     paintballgun:
-          aliases: [pbgun
+
