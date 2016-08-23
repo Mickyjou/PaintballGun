@@ -1,8 +1,7 @@
 package me.mickyjou.main;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Random;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -13,7 +12,9 @@ import org.bukkit.entity.Snowball;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.ProjectileHitEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.BlockIterator;
+
 
 public class ProjectileHitListener implements Listener {
 
@@ -27,7 +28,7 @@ public class ProjectileHitListener implements Listener {
 	private pbgun plugin;
 
 	public ProjectileHitListener(pbgun pbgun) {
-		this.plugin=pbgun;
+		this.plugin = pbgun;
 	}
 
 	@EventHandler
@@ -46,34 +47,39 @@ public class ProjectileHitListener implements Listener {
 					break;
 				}
 			}
-			
 
 			destroyed.put(block, b.getLocation().getBlockX() + ";" + b.getLocation().getBlockY() + ";"
 					+ b.getLocation().getBlockZ() + ";" + b.getTypeId() + ";" + b.getData());
 			block++;
-			
+
 			Bukkit.getScheduler().scheduleSyncDelayedTask(this.plugin, new Runnable() {
 
 				@Override
 				public void run() {
-					
+
 					String[] parts = destroyed.get(curblock).split(";");
 					int x = Integer.valueOf(parts[0]);
-					int y= Integer.valueOf(parts[1]);
-					int z= Integer.valueOf(parts[2]);
-					int id= Integer.valueOf(parts[3]);
-					byte data= Byte.valueOf(parts[4]);
-					
+					int y = Integer.valueOf(parts[1]);
+					int z = Integer.valueOf(parts[2]);
+					int id = Integer.valueOf(parts[3]);
+					byte data = Byte.valueOf(parts[4]);
+
 					Location loc = new Location(sb.getWorld(), x, y, z);
 					loc.getBlock().setTypeId(id);
 					loc.getBlock().setData(data);
 					curblock++;
-					
-					
+
 				}
-				
-			}, 30*20);
-			b.setType(Material.AIR);
+
+			}, 30 * 20);
+			int i = 15;
+			Random r = new Random();
+			int random = r.nextInt(i);
+			if (random == 0) {
+				b.setType(Material.WOOL);
+			}else{
+				b.setTypeIdAndData(35, (byte) random, true);
+			}
 
 		}
 	}
