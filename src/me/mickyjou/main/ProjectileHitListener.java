@@ -72,7 +72,7 @@ public class ProjectileHitListener implements Listener {
 					
 				}
 				
-			}, 5*20);
+			}, 30*20);
 			b.setType(Material.AIR);
 
 		}
