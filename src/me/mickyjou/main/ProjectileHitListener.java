@@ -15,7 +15,6 @@ import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.BlockIterator;
 
-
 public class ProjectileHitListener implements Listener {
 
 	private Snowball projectile;
@@ -26,6 +25,9 @@ public class ProjectileHitListener implements Listener {
 	private int curblock = 0;
 	private int block = 0;
 	private pbgun plugin;
+	
+	
+	private int scheduler;
 
 	public ProjectileHitListener(pbgun pbgun) {
 		this.plugin = pbgun;
@@ -48,36 +50,40 @@ public class ProjectileHitListener implements Listener {
 				}
 			}
 
-			destroyed.put(block, b.getLocation().getBlockX() + ";" + b.getLocation().getBlockY() + ";"
-					+ b.getLocation().getBlockZ() + ";" + b.getTypeId() + ";" + b.getData());
-			block++;
+			if (b.getType() != Material.WOOL) {
+				destroyed.put(block, b.getLocation().getBlockX() + ";" + b.getLocation().getBlockY() + ";"
+						+ b.getLocation().getBlockZ() + ";" + b.getTypeId() + ";" + b.getData());
+				block++;
+				scheduler = 30;
 
-			Bukkit.getScheduler().scheduleSyncDelayedTask(this.plugin, new Runnable() {
+				scheduler = Bukkit.getScheduler().scheduleSyncDelayedTask(this.plugin, new Runnable() {
 
-				@Override
-				public void run() {
+					@Override
+					public void run() {
 
-					String[] parts = destroyed.get(curblock).split(";");
-					int x = Integer.valueOf(parts[0]);
-					int y = Integer.valueOf(parts[1]);
-					int z = Integer.valueOf(parts[2]);
-					int id = Integer.valueOf(parts[3]);
-					byte data = Byte.valueOf(parts[4]);
+						String[] parts = destroyed.get(curblock).split(";");
+						int x = Integer.valueOf(parts[0]);
+						int y = Integer.valueOf(parts[1]);
+						int z = Integer.valueOf(parts[2]);
+						int id = Integer.valueOf(parts[3]);
+						byte data = Byte.valueOf(parts[4]);
 
-					Location loc = new Location(sb.getWorld(), x, y, z);
-					loc.getBlock().setTypeId(id);
-					loc.getBlock().setData(data);
-					curblock++;
+						Location loc = new Location(sb.getWorld(), x, y, z);
+						loc.getBlock().setTypeId(id);
+						loc.getBlock().setData(data);
+						curblock++;
 
-				}
+					}
 
-			}, 30 * 20);
+				}, 30 * 20);
+			}
+
 			int i = 15;
 			Random r = new Random();
 			int random = r.nextInt(i);
 			if (random == 0) {
 				b.setType(Material.WOOL);
-			}else{
+			} else {
 				b.setTypeIdAndData(35, (byte) random, true);
 			}
 
