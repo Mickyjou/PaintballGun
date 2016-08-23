@@ -1,7 +1,7 @@
 name: PaintballGun
 author: Mickyjou
 version: 1.0
-main: me.mickyjou.main.pbgun
+main: PaintBallGunPlugin
 commands:
      paintballgun:
           aliases: [pbgun]
