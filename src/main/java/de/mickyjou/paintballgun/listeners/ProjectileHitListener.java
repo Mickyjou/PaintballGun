@@ -1,6 +1,7 @@
 package de.mickyjou.paintballgun.listeners;
 
 import de.mickyjou.paintballgun.PaintballGunPlugin;
+import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -11,6 +12,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.potion.Potion;
+import org.bukkit.potion.PotionType;
 import org.bukkit.util.BlockIterator;
 
 import java.util.HashMap;
@@ -36,6 +39,7 @@ public class ProjectileHitListener implements Listener {
                     //noinspection deprecation
                     player.sendBlockChange(b.getLocation(), Material.WOOL, color);
                 }
+                b.getLocation().getWorld().playEffect(b.getLocation().add(0.5, 0.5, 0.5), Effect.POTION_BREAK, new Potion(getPotionEffect(color)));
                 woolBlocks.put(b.getLocation(), color);
 
                 plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
@@ -47,6 +51,38 @@ public class ProjectileHitListener implements Listener {
                     }
                 }, 30 * 20);
             }
+        }
+    }
+
+    private PotionType getPotionEffect(byte color) {
+        switch (color) {
+            case 1:
+            case 4:
+                return PotionType.FIRE_RESISTANCE;
+            case 10:
+            case 6:
+            case 2:
+                return PotionType.REGEN;
+            case 3:
+            case 9:
+                return PotionType.SPEED;
+            case 5:
+                return PotionType.JUMP;
+            case 7:
+            case 8:
+                return PotionType.INVISIBILITY;
+            case 13:
+                return PotionType.POISON;
+            case 11:
+                return PotionType.WATER_BREATHING;
+            case 12:
+                return PotionType.STRENGTH;
+            case 14:
+                return PotionType.INSTANT_HEAL;
+            case 15:
+                return PotionType.INSTANT_DAMAGE;
+            default:
+                return PotionType.WATER;
         }
     }
 
