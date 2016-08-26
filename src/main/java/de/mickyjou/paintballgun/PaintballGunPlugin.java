@@ -1,16 +1,14 @@
 package de.mickyjou.paintballgun;
 
+import de.mickyjou.paintballgun.listeners.PlayerInteractListener;
+import de.mickyjou.paintballgun.listeners.ProjectileHitListener;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class PaintballGunPlugin extends JavaPlugin {
-
+    @Override
     public void onEnable() {
         registerCommands();
         registerEvents();
-    }
-
-    public void onDisable() {
-
     }
 
     private void registerCommands() {
@@ -19,7 +17,7 @@ public class PaintballGunPlugin extends JavaPlugin {
     }
 
     private void registerEvents() {
-        getServer().getPluginManager().registerEvents(new PlayerInteractListener(), this);
+        getServer().getPluginManager().registerEvents(new PlayerInteractListener(this), this);
         getServer().getPluginManager().registerEvents(new ProjectileHitListener(this), this);
     }
 }
