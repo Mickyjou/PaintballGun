@@ -5,3 +5,4 @@ main: de.mickyjou.paintballgun.PaintballGunPlugin
 commands:
      paintballgun:
           aliases: [pbgun]
+          permission: paintballgun.buy
