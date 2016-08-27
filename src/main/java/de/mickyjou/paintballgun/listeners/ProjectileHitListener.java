@@ -5,6 +5,8 @@ import org.bukkit.Effect;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
@@ -20,109 +22,117 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ProjectileHitListener implements Listener {
-    private final PaintballGunPlugin plugin;
-    private final Map<Location, Byte> woolBlocks = new HashMap<>();
 
-    public ProjectileHitListener(PaintballGunPlugin plugin) {
-        this.plugin = plugin;
-    }
+	File file = new File("plugins/PaintballGun", "config.yml");
+	FileConfiguration cfg = YamlConfiguration.loadConfiguration(file);
 
-    @EventHandler
-    public void onProjectileHit(ProjectileHitEvent e) {
-        if (e.getEntity().hasMetadata("isPaintball") && e.getEntity().getShooter() instanceof Player) {
-            Projectile sb = e.getEntity();
+	private final PaintballGunPlugin plugin;
+	private final Map<Location, Byte> woolBlocks = new HashMap<>();
 
-            final Block b = getHitBlock(sb);
-            if (b != null && !woolBlocks.containsKey(b.getLocation())) {
-                byte color = (byte) Math.floor(Math.random() * 15 + 1);
-                for (Player player : b.getWorld().getPlayers()) {
-                    //noinspection deprecation
-                    player.sendBlockChange(b.getLocation(), Material.WOOL, color);
-                }
-                b.getLocation().getWorld().playEffect(b.getLocation().add(0.5, 0.5, 0.5), Effect.POTION_BREAK, new Potion(getPotionEffect(color)));
-                woolBlocks.put(b.getLocation(), color);
+	public ProjectileHitListener(PaintballGunPlugin plugin) {
+		this.plugin = plugin;
+	}
 
-                plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-                    woolBlocks.remove(b.getLocation());
+	@EventHandler
+	public void onProjectileHit(ProjectileHitEvent e) {
+		if (e.getEntity().hasMetadata("isPaintball") && e.getEntity().getShooter() instanceof Player) {
+			Projectile sb = e.getEntity();
 
-                    for (Player player : b.getWorld().getPlayers()) {
-                        //noinspection deprecation
-                        player.sendBlockChange(b.getLocation(), b.getType(), b.getData());
-                    }
-                }, 30 * 20);
-            }
-        }
-    }
+			final Block b = getHitBlock(sb);
+			if (!cfg.getStringList("BlockedBlocks").contains(b.getTypeId())) {
+				if (b != null && !woolBlocks.containsKey(b.getLocation())) {
+					byte color = (byte) Math.floor(Math.random() * 15 + 1);
+					for (Player player : b.getWorld().getPlayers()) {
+						// noinspection deprecation
+						player.sendBlockChange(b.getLocation(), Material.WOOL, color);
+					}
+					b.getLocation().getWorld().playEffect(b.getLocation().add(0.5, 0.5, 0.5), Effect.POTION_BREAK,
+							new Potion(getPotionEffect(color)));
+					woolBlocks.put(b.getLocation(), color);
 
-    private PotionType getPotionEffect(byte color) {
-        switch (color) {
-            case 1:
-            case 4:
-                return PotionType.FIRE_RESISTANCE;
-            case 10:
-            case 6:
-            case 2:
-                return PotionType.REGEN;
-            case 3:
-            case 9:
-                return PotionType.SPEED;
-            case 5:
-                return PotionType.JUMP;
-            case 7:
-            case 8:
-                return PotionType.INVISIBILITY;
-            case 13:
-                return PotionType.POISON;
-            case 11:
-                return PotionType.WATER_BREATHING;
-            case 12:
-                return PotionType.STRENGTH;
-            case 14:
-                return PotionType.INSTANT_HEAL;
-            case 15:
-                return PotionType.INSTANT_DAMAGE;
-            default:
-                return PotionType.WATER;
-        }
-    }
+					plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+						woolBlocks.remove(b.getLocation());
 
-    @EventHandler
-    public void onJoin(PlayerJoinEvent event) {
-        final Player player = event.getPlayer();
-        plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-            woolBlocks.forEach((location, color) -> {
-                if (location.getWorld().equals(event.getPlayer().getWorld())) {
-                    if (player.isOnline()) {
-                        //noinspection deprecation
-                        player.sendBlockChange(location, Material.WOOL, color);
-                    }
-                }
-            });
-        }, 5 * 20);
-    }
+						for (Player player : b.getWorld().getPlayers()) {
+							// noinspection deprecation
+							player.sendBlockChange(b.getLocation(), b.getType(), b.getData());
+						}
+					} , 30 * 20);
+				}
+			}
+		}
+	}
 
-    @EventHandler
-    public void onWorldChange(PlayerChangedWorldEvent event) {
-        woolBlocks.forEach((location, color) -> {
-            if (location.getWorld().equals(event.getPlayer().getWorld())) {
-                //noinspection deprecation
-                event.getPlayer().sendBlockChange(location, Material.WOOL, color);
-            }
-        });
-    }
+	private PotionType getPotionEffect(byte color) {
+		switch (color) {
+		case 1:
+		case 4:
+			return PotionType.FIRE_RESISTANCE;
+		case 10:
+		case 6:
+		case 2:
+			return PotionType.REGEN;
+		case 3:
+		case 9:
+			return PotionType.SPEED;
+		case 5:
+			return PotionType.JUMP;
+		case 7:
+		case 8:
+			return PotionType.INVISIBILITY;
+		case 13:
+			return PotionType.POISON;
+		case 11:
+			return PotionType.WATER_BREATHING;
+		case 12:
+			return PotionType.STRENGTH;
+		case 14:
+			return PotionType.INSTANT_HEAL;
+		case 15:
+			return PotionType.INSTANT_DAMAGE;
+		default:
+			return PotionType.WATER;
+		}
+	}
 
-    private Block getHitBlock(Projectile sb) {
-        BlockIterator bi = new BlockIterator(sb.getWorld(), sb.getLocation().toVector(), sb.getVelocity().normalize(), 0.0D, 4);
+	@EventHandler
+	public void onJoin(PlayerJoinEvent event) {
+		final Player player = event.getPlayer();
+		plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+			woolBlocks.forEach((location, color) -> {
+				if (location.getWorld().equals(event.getPlayer().getWorld())) {
+					if (player.isOnline()) {
+						// noinspection deprecation
+						player.sendBlockChange(location, Material.WOOL, color);
+					}
+				}
+			});
+		} , 5 * 20);
+	}
 
-        Block b = null;
-        while (bi.hasNext()) {
-            b = bi.next();
+	@EventHandler
+	public void onWorldChange(PlayerChangedWorldEvent event) {
+		woolBlocks.forEach((location, color) -> {
+			if (location.getWorld().equals(event.getPlayer().getWorld())) {
+				// noinspection deprecation
+				event.getPlayer().sendBlockChange(location, Material.WOOL, color);
+			}
+		});
+	}
 
-            if (b.getType() != Material.AIR) {
-                break;
-            }
-        }
+	private Block getHitBlock(Projectile sb) {
+		BlockIterator bi = new BlockIterator(sb.getWorld(), sb.getLocation().toVector(), sb.getVelocity().normalize(),
+				0.0D, 4);
 
-        return b;
-    }
+		Block b = null;
+		while (bi.hasNext()) {
+			b = bi.next();
+
+			if (b.getType() != Material.AIR) {
+				break;
+			}
+		}
+
+		return b;
+	}
 }
